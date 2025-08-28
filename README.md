@@ -1,6 +1,4 @@
-# Nombre del Proyecto
-
-Prueba Tecnica para desarrollador Backend en BRM
+# Prueba Tecnica para desarrollador Backend en BRM
 
 ##  Instalación
 

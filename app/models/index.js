@@ -7,7 +7,6 @@ const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 
-// Ruta CORREGIDA - usa path.resolve
 const config = require(path.resolve(__dirname, '../../config/database.js'));
 const db = {};
 

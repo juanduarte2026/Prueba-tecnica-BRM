@@ -1,0 +1,8 @@
+{
+  "name": "BRM Prueba Tecnica",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión de Productos y Compras",
+  "title": "BRM API Documentation",
+  "url": "http://localhost:3000/api",
+  "sampleUrl": "http://localhost:3000/api"
+}

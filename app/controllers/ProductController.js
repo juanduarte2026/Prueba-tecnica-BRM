@@ -1,17 +1,12 @@
 const { Product, User } = require('../models/index');
 const { Op } = require('sequelize');
+const logger = require('../utils/logger');
 
 module.exports = {
 
   async find(req, res, next) {
     try {
-      let product = await Product.findByPk(req.params.id, {
-        include: [{
-          model: User,
-          as: 'creator',
-          attributes: ['id', 'firstName', 'lastName']
-        }]
-      });
+      let product = await Product.findByPk(req.params.id);
       
       if (!product) {
         return res.status(404).json({ msg: "Producto no encontrado" });
@@ -19,15 +14,15 @@ module.exports = {
       req.product = product;
       next();
     } catch (error) {
-      res.status(500).json({ msg: "Error al buscar producto", error: error.message });
+      logger.error(`Error buscando producto: ${error.message}`);
+      res.status(500).json({ msg: "Error al buscar producto" });
     }
   },
 
-  // Todos los productos (público para clientes y admins)
+  // Todos los productos
   async index(req, res) {
     try {
-      const { page = 1, limit = 10, search } = req.query;
-      const offset = (page - 1) * limit;
+      const { search } = req.query;
       
       let whereCondition = {};
       if (search) {
@@ -39,71 +34,43 @@ module.exports = {
         };
       }
 
-      const products = await Product.findAndCountAll({
+      const products = await Product.findAll({
         where: whereCondition,
-        include: [{
-          model: User,
-          as: 'creator',
-          attributes: ['id', 'firstName', 'lastName']
-        }],
-        limit: parseInt(limit),
-        offset: offset,
         order: [['createdAt', 'DESC']]
       });
 
       res.json({
-        products: products.rows,
-        total: products.count,
-        totalPages: Math.ceil(products.count / limit),
-        currentPage: parseInt(page)
+        products: products,
+        total: products.length
       });
     } catch (error) {
-      res.status(500).json({ msg: "Error al obtener productos", error: error.message });
+      logger.error(`Error obteniendo productos: ${error.message}`);
+      res.status(500).json({ msg: "Error al obtener productos" });
     }
   },
 
-  // Productos de un usuario específico
+  // Productos del usuario
   async userProducts(req, res) {
     try {
       const userId = req.user.id;
-      const { page = 1, limit = 10, search } = req.query;
-      const offset = (page - 1) * limit;
-      
-      let whereCondition = { userId };
-      if (search) {
-        whereCondition = {
-          userId,
-          [Op.or]: [
-            { name: { [Op.iLike]: `%${search}%` } },
-            { batchNumber: { [Op.iLike]: `%${search}%` } }
-          ]
-        };
-      }
 
-      const products = await Product.findAndCountAll({
-        where: whereCondition,
-        limit: parseInt(limit),
-        offset: offset,
+      const products = await Product.findAll({
+        where: { userId },
         order: [['createdAt', 'DESC']]
       });
 
       res.json({
-        products: products.rows,
-        total: products.count,
-        totalPages: Math.ceil(products.count / limit),
-        currentPage: parseInt(page)
+        products: products,
+        total: products.length
       });
     } catch (error) {
-      res.status(500).json({ msg: "Error al obtener productos del usuario", error: error.message });
+      logger.error(`Error obteniendo productos usuario: ${error.message}`);
+      res.status(500).json({ msg: "Error al obtener productos" });
     }
   },
 
   async show(req, res) {
-    try {
-      res.json(req.product);
-    } catch (error) {
-      res.status(500).json({ msg: "Error al mostrar producto", error: error.message });
-    }
+    res.json(req.product);
   },
 
   async create(req, res) {
@@ -116,15 +83,18 @@ module.exports = {
         name,
         price: parseFloat(price),
         quantityAvailable: parseInt(quantityAvailable),
-        userId: userId // Asignar el usuario que crea el producto
+        userId
       });
 
-      res.status(201).json({ msg: "Producto creado exitosamente", product });
+      logger.info(`Producto creado: ${name} por usuario ${userId}`);
+      res.status(201).json({ msg: "Producto creado", product });
     } catch (error) {
+      logger.error(`Error creando producto: ${error.message}`);
+      
       if (error.name === 'SequelizeUniqueConstraintError') {
-        return res.status(400).json({ msg: "El número de lote ya existe" });
+        return res.status(400).json({ msg: "Número de lote ya existe" });
       }
-      res.status(500).json({ msg: "Error al crear producto", error: error.message });
+      res.status(500).json({ msg: "Error al crear producto" });
     }
   },
 
@@ -132,56 +102,28 @@ module.exports = {
     try {
       const { name, price, quantityAvailable } = req.body;
       
-      req.product.name = name;
-      req.product.price = parseFloat(price);
-      req.product.quantityAvailable = parseInt(quantityAvailable);
+      await req.product.update({
+        name,
+        price: parseFloat(price),
+        quantityAvailable: parseInt(quantityAvailable)
+      });
 
-      await req.product.save();
-
-      res.json({ msg: "Producto actualizado exitosamente", product: req.product });
+      logger.info(`Producto actualizado: ${req.product.id}`);
+      res.json({ msg: "Producto actualizado", product: req.product });
     } catch (error) {
-      res.status(500).json({ msg: "Error al actualizar producto", error: error.message });
+      logger.error(`Error actualizando producto: ${error.message}`);
+      res.status(500).json({ msg: "Error al actualizar producto" });
     }
   },
 
   async delete(req, res) {
     try {
       await req.product.destroy();
-      res.json({ msg: "Producto eliminado exitosamente" });
+      logger.info(`Producto eliminado: ${req.product.id}`);
+      res.json({ msg: "Producto eliminado" });
     } catch (error) {
-      res.status(500).json({ msg: "Error al eliminar producto", error: error.message });
-    }
-  },
-
-  async userProductShow(req, res) {
-    try {
-      const userId = req.user.id;
-      const productId = req.params.id;
-
-      const product = await Product.findOne({
-        where: {
-          id: productId,
-          userId: userId
-        },
-        include: [{
-          model: User,
-          as: 'creator',
-          attributes: ['id', 'firstName', 'lastName']
-        }]
-      });
-
-      if (!product) {
-        return res.status(404).json({ 
-          msg: "Producto no encontrado en tu inventario" 
-        });
-      }
-
-      res.json(product);
-    } catch (error) {
-      res.status(500).json({ 
-        msg: "Error al obtener el producto", 
-        error: error.message 
-      });
+      logger.error(`Error eliminando producto: ${error.message}`);
+      res.status(500).json({ msg: "Error al eliminar producto" });
     }
   }
 

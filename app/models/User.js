@@ -49,12 +49,10 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'User',
-    // Sequelize automáticamente maneja timestamps, pero si quieres control explícito:
     timestamps: true
   });
 
 User.isAdministrador = function(userRoles) {
-    // Verificar si userRoles es un array válido
     if (!userRoles || !Array.isArray(userRoles)) {
         return false;
     }

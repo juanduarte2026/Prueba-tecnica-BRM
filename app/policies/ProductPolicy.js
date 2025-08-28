@@ -1,7 +1,7 @@
 module.exports = {
-  // Clientes y administradores pueden ver todos los productos
+ 
   async show(req, res, next) {
-    next(); // Todos pueden ver
+    next(); 
   },
 
   // Solo administradores pueden crear productos
@@ -12,7 +12,7 @@ module.exports = {
     next();
   },
 
-  // SOLO el creador del producto puede actualizar (ni siquiera otros admins)
+ 
   async update(req, res, next) {
     const isCreator = req.product.userId === req.user.id;
     
@@ -24,7 +24,7 @@ module.exports = {
     next();
   },
 
-  // SOLO el creador del producto puede eliminar (ni siquiera otros admins)
+  // SOLO el creador del producto puede eliminar
   async delete(req, res, next) {
     const isCreator = req.product.userId === req.user.id;
     
@@ -36,7 +36,7 @@ module.exports = {
     next();
   },
 
-  // Solo administradores pueden ver todos los productos (para rutas admin)
+  // Solo administradores pueden ver todos los productos 
   async adminOnly(req, res, next) {
     if (!req.user.roles.some(role => role.role === 'administrador')) {
       return res.status(403).json({ msg: "No autorizado" });
@@ -44,7 +44,7 @@ module.exports = {
     next();
   },
 
-  // NUEVA POLÍTICA: Verificar que el producto pertenece al usuario
+  // Verificar que el producto pertenece al usuario
   async userProductAccess(req, res, next) {
     const isCreator = req.product.userId === req.user.id;
     

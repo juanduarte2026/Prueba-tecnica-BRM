@@ -1,10 +1,10 @@
 {
   "name": "brm-prueba",
   "version": "1.0.0",
-  "main": "app/server.js",
+  "main": "app/app.js",
   "scripts": {
-    "dev": "nodemon app/server.js",
-    "start": "node app/server.js",
+    "dev": "nodemon app/app.js",
+    "start": "node app/app.js",
     "db:migrate": "npx sequelize-cli db:migrate",
     "db:seed": "npx sequelize-cli db:seed:all"
   },

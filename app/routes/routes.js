@@ -2,18 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 const auth = require('../middlewares/auth')
-
 const ProductPolicy = require('../policies/ProductPolicy')
 const PurchasePolicy = require('../policies/PurchasePolicy');
-
 const AuthController = require('../controllers/AuthController')
 const ProductController = require('../controllers/ProductController')
 const PurchaseController = require('../controllers/PurchaseController');
 
-
-
-// Ruta de prueba
-router.get('/', (req, res) => res.json({ hello: "World23453" }));
 
 // Rutas de autenticación (sin /api porque ya está en el prefijo)
 router.post('/login', AuthController.logIn)

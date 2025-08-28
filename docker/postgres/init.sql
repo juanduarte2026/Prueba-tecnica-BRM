@@ -1,0 +1,2 @@
+CREATE USER postgres WITH SUPERUSER PASSWORD 'password';
+CREATE DATABASE auth_db OWNER postgres;

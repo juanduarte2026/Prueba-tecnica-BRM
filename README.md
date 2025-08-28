@@ -11,6 +11,5 @@ Prueba Tecnica para desarrollador Backend en BRM
  3. Ejecutar los siguientes comandos:
 
     - docker-compose up --build -d
-    - docker-compose exec app npm install
     - docker-compose exec app npx sequelize-cli db:migrate 
     - docker-compose exec app npx sequelize-cli db:seed:all   

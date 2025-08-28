@@ -10,8 +10,6 @@ RUN npm install
 
 # Copiar solo lo necesario
 COPY app/ ./app/
-COPY doc/ ./doc/
-COPY apidoc.json ./
 
 EXPOSE 3000
 

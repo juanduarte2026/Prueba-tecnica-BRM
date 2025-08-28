@@ -13,11 +13,10 @@ services:
       - DB_PORT=5432
     volumes:
       - .:/app
-      - ./doc:/app/doc  
-      - ./apidoc.json:/app/apidoc.json 
+      - /app/node_modules 
     depends_on:
       - db
-    command: npm run dev
+    command: sh -c "npm install && npm run dev"
 
   db:
     image: postgres:13-alpine
